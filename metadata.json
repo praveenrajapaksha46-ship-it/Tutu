@@ -1,0 +1,6 @@
+{
+  "name": "SmartDroid AI",
+  "description": "SmartDroid AI is a complete modern AI assistant app with speech recognition, TTS, device controls like flashlight, app-opening, alarm/reminders, phone/SMS integration, and local chat history in Room.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
