@@ -1,6 +1,6 @@
 {
-  "name": "SmartDroid AI",
-  "description": "SmartDroid AI is a complete modern AI assistant app with speech recognition, TTS, device controls like flashlight, app-opening, alarm/reminders, phone/SMS integration, and local chat history in Room.",
+  "name": "Tutu",
+  "description": "Tutu is an always-on advanced Android AI Voice Assistant supporting Sinhala & English, featuring continuous offline wake-word monitoring, notification reading, device setting toggles, direct calling/SMS and custom intelligence using the Gemini API.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -114,8 +114,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.data.model.ChatMessage
 import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.viewmodel.AssistantState
+import com.example.manager.AssistantState
 import com.example.ui.viewmodel.AssistantViewModel
+import com.example.services.TutuVoiceService
+import android.os.Build
+import android.content.Intent
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -212,14 +215,14 @@ fun PermissionsGateScreen(
         ) {
             Icon(
                 imageVector = Icons.Default.Chat,
-                contentDescription = "SmartDroid AI Logo",
+                contentDescription = "Tutu AI Logo",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
         }
 
         Text(
-            text = "Welcome to SmartDroid AI",
+            text = "Welcome to Tutu",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
@@ -228,7 +231,7 @@ fun PermissionsGateScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "To enable features like voice commands, flashlight control, direct calling, and sending text messages, the application requires system permissions.",
+            text = "Tutu is your always-on hands-free Assistant supporting English and Sinhala (සිංහල). To enable voice commands, background wake phrase monitoring, calling, and notifications, please grant system permissions.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -382,15 +385,15 @@ fun SmartAssistantScreen(
 
                         Column {
                             Text(
-                                text = "SmartDroid AI",
+                                text = "Tutu",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             val subLabel = when (state) {
-                                AssistantState.IDLE -> "Offline fallbacks active"
-                                AssistantState.LISTENING -> "Listening user voice..."
-                                AssistantState.PROCESSING -> "Analyzing commands..."
-                                AssistantState.SPEAKING -> "Speaking réponse..."
+                                AssistantState.IDLE -> "Always-On Active"
+                                AssistantState.LISTENING -> "අහගෙන ඉන්නේ..."
+                                AssistantState.PROCESSING -> "සිතමින් පවතී..."
+                                AssistantState.SPEAKING -> "පිළිතුරු දෙමින්..."
                             }
                             Text(
                                 text = subLabel,
@@ -400,16 +403,45 @@ fun SmartAssistantScreen(
                         }
                     }
 
-                    if (messages.isNotEmpty()) {
+                    Row {
+                        val activeContinuous by viewModel.continuousMode.collectAsState()
+                        val context = LocalContext.current
+                        
+                        LaunchedEffect(activeContinuous) {
+                            val intent = Intent(context, TutuVoiceService::class.java)
+                            if (activeContinuous) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    context.startForegroundService(intent)
+                                } else {
+                                    context.startService(intent)
+                                }
+                            } else {
+                                context.stopService(intent)
+                            }
+                        }
+
                         IconButton(
-                            onClick = { viewModel.clearChatHistory() },
+                            onClick = { viewModel.toggleContinuousMode() },
                             modifier = Modifier.size(40.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ClearAll,
-                                contentDescription = "Clear History",
-                                tint = MaterialTheme.colorScheme.primary
+                                imageVector = if (activeContinuous) Icons.Default.Mic else Icons.Default.MicOff,
+                                contentDescription = "Always-On Wake Monitor",
+                                tint = if (activeContinuous) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                             )
+                        }
+
+                        if (messages.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.clearChatHistory() },
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ClearAll,
+                                    contentDescription = "Clear History",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
@@ -501,11 +533,12 @@ fun SmartAssistantScreen(
                     contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
                     val suggestionList = listOf(
-                        "Search latest Android news",
-                        "Call Amila",
+                        "ටුටු, ෆ්ලෑෂ් ලයිට් එක දාන්න",
+                        "Close app",
+                        "Read notifications",
                         "Set alarm for 6 AM",
-                        "Turn on flashlight",
-                        "Open WhatsApp"
+                        "ටුටු, බ්ලූටූත් ඔන් කරන්න",
+                        "Open YouTube"
                     )
                     items(suggestionList) { suggestion ->
                         Box(
@@ -652,14 +685,14 @@ fun SmartAssistantScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Your AI is Ready",
+                        text = "Tutu is Listening",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tap the Mic or type device orders to begin! Try saying:",
+                        text = "Say \"Hey Tutu\" anytime or tap the Microphone to start background voice commands in Sinhala or English! Try:",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -678,12 +711,12 @@ fun SmartAssistantScreen(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            CommandExampleItem(text = "\"Turn on flashlight\"")
-                            CommandExampleItem(text = "\"Call Amila\"")
-                            CommandExampleItem(text = "\"Send SMS to Sam saying I am running late\"")
-                            CommandExampleItem(text = "\"Set alarm for 6:30 AM\"")
-                            CommandExampleItem(text = "\"Open YouTube\"")
-                            CommandExampleItem(text = "\"What is artificial intelligence?\"")
+                            CommandExampleItem(text = "\"ටුටු, ෆ්ලෑෂ් ලයිට් එක දාන්න\" (Turn on flashlight)")
+                            CommandExampleItem(text = "\"Close current app\" (මෙම ඇප් එක වහන්න)")
+                            CommandExampleItem(text = "\"Read my notifications\" (මතක් කිරීම් කියවන්න)")
+                            CommandExampleItem(text = "\"Set alarm for 6:30 AM\" (ඇලර්ම් එකක් තියන්න)")
+                            CommandExampleItem(text = "\"Open settings\" (සෙටින්ග්ස් ලෝන්ච් කරන්න)")
+                            CommandExampleItem(text = "\"What is the speed of light?\"")
                         }
                     }
                 }
